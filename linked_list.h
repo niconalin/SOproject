@@ -20,16 +20,16 @@ void List_init(ListHead *head);
 
 // retrieves an element in the list // returns NULL if item not in list
 ListItem *List_find(ListHead *head,
-                    ListItem *item);
+    ListItem *item);
 
 // inserts an element after previous in the list // returns NULL on failure
 ListItem *List_insert(ListHead *head,
-                      ListItem *previous,
-                      ListItem *item);
+    ListItem *previous,
+    ListItem *item);
 
 // detaches (without deleting) an element to the // list
 ListItem *List_detach(ListHead *head,
-                      ListItem *item);
+    ListItem *item);
 
 // free all memory allocated for the list
 void List_free(ListHead *head);

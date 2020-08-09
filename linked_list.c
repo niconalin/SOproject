@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "common.h"
 #include "linked_list.h"
 
 void List_init(ListHead *head)
 {
-    head->first = 0;
-    head->last = 0;
+    head->first = NULL;
+    head->last = NULL;
     head->size = 0;
+    return;
 }
 
 ListItem *List_find(ListHead *head, ListItem *item)
@@ -14,17 +16,15 @@ ListItem *List_find(ListHead *head, ListItem *item)
     ListItem *aux = head->first;
     while (aux)
     {
-        if (aux == item)
-            return item;
+        if (aux == item) return item;
         aux = aux->next;
     }
-    return 0;
+    return NULL;
 }
 
 ListItem *List_insert(ListHead *head, ListItem *prev, ListItem *item)
 {
-    if (item->next || item->prev)
-        return 0;
+    if (item->next || item->prev) return NULL;
     ListItem *next = prev ? prev->next : head->first;
     if (prev)
     {
@@ -48,18 +48,10 @@ ListItem *List_detach(ListHead *head, ListItem *item)
 {
     ListItem *prev = item->prev;
     ListItem *next = item->next;
-    if (prev)
-    {
-        prev->next = next;
-    }
-    if (next)
-    {
-        next->prev = prev;
-    }
-    if (item == head->first)
-        head->first = next;
-    if (item == head->last)
-        head->last = prev;
+    if (prev) prev->next = next;
+    if (next) next->prev = prev;
+    if (item == head->first) head->first = next;
+    if (item == head->last) head->last = prev;
     head->size--;
     item->next = item->prev = 0;
     return item;
