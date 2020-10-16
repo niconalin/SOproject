@@ -17,13 +17,23 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     connection.cpp \
+    filereader.cpp \
+    filewriter.cpp \
+    login.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    registration.cpp \
+    userdatabase.cpp
 
 HEADERS += \
     common.h \
     connection.h \
-    mainwindow.h
+    filereader.h \
+    filewriter.h \
+    login.h \
+    mainwindow.h \
+    registration.h \
+    userdatabase.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

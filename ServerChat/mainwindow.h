@@ -1,10 +1,12 @@
 #pragma once
 
+#include <QDesktopWidget>
 #include <QGridLayout>
 #include <QMainWindow>
 #include <QPushButton>
 #include <QWidget>
-#include "connection.h"
+
+class Connection;
 
 class MainWindow : public QMainWindow
 {

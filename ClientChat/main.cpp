@@ -1,12 +1,10 @@
-#include "welcomewindow.h"
-
+#include "windows.h"
 #include <QApplication>
 
 //open up the welcome window
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    WelcomeWindow w;
-    w.show();
+    Windows w;
     return a.exec();
 }

@@ -17,4 +17,4 @@
     } while (0)
 
 /* Configuration parameters */
-#define DEBUG 1          // display debug messages
+const int DEBUG = 1 ;         // display debug messages

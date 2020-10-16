@@ -1,13 +1,17 @@
-#include <arpa/inet.h>  // htons() and inet_addr()
+#include <arpa/inet.h>
 #include <errno.h>
-#include <netinet/in.h> // struct sockaddr_in
+#include <iostream>
+#include <netinet/in.h>
 #include <pthread.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <unistd.h>
+using namespace std;
+
 #include "common.h"
 #include "connection.h"
+#include "login.h"
+#include "registration.h"
 
 typedef struct handler_args_s
 {
@@ -15,20 +19,58 @@ typedef struct handler_args_s
     struct sockaddr_in *client_addr;
 } handler_args_t;
 
+//constructor
 Connection::Connection(){
-    running = false;
+    this->running = false;
 }
 
+//return socket descriptor
 int Connection::get_socketDesc(){
     return socketDesc;
 }
 
+//receive option (selected service) from the client
+int receive_option(int socketDesc) {
+  int option, recv_bytes;
+  while ((recv_bytes = recv(socketDesc, &option, sizeof(option), 0)) < 0) {
+    if (errno == EINTR) continue;
+    handle_error("Cannot read from socket");
+  }
+  if (recv_bytes == 0) return -1;
+  if (DEBUG) cerr << "Connection: OPTION RECEIVED" << endl;
+  return option;
+}
+
 void connection_handler(int socketDesc, struct sockaddr_in *client_addr)
 {
-    int ret;
+    int ret, option;
 
-    if (DEBUG) fprintf(stderr, "%d\n", client_addr->sin_port);
-
+    while(true) {
+      option = receive_option(socketDesc);
+      switch (option) {
+        case LOGIN: {
+          if (DEBUG) cerr << "Connection: LOGIN STARTED" << endl;
+          Login *login = new Login(socketDesc);
+          login->receive_login_data();
+          login->check_login_data();
+          login->send_response();
+          break;
+        }
+        case REGISTRATION: {
+          if (DEBUG) cerr << "Connection: REGISTRATION STARTED" << endl;
+          Registration *registration = new Registration(socketDesc);
+          registration->receive_registration_data();
+          registration->check_registration_data();
+          if(registration->get_registration_status() == NOT_YET_REGISTRATED) {
+            registration->create_new_user();
+          }
+          registration->send_response();
+          break;
+        }
+        default:
+          break;
+      }
+    }
     // close socket
     ret = close(socketDesc);
     if (ret)
@@ -78,7 +120,7 @@ void Connection::start_server()
         handle_error("Cannot set SO_REUSEPORT option");
 
     // bind address to socket
-    ret = bind(socketDesc, (struct sockaddr *)&server_addr, sizeof(struct sockaddr_in));
+    ret = ::bind(socketDesc, (struct sockaddr *)&server_addr, sizeof(struct sockaddr_in));
     if (ret)
         handle_error("Cannot bind address to socket");
 
@@ -89,7 +131,10 @@ void Connection::start_server()
 
     // loop to manage incoming connections spawning handler threads
     int sockaddr_len = sizeof(struct sockaddr_in);
+
     running = true;
+    if (DEBUG) cerr << "Connection: SERVER STARTED" << endl;
+
     while (running)
     {
         // we dynamically allocate a fresh client_addr object at each
@@ -104,8 +149,7 @@ void Connection::start_server()
         if (client_desc < 0)
             handle_error("Cannot open socket for incoming connection");
 
-        if (DEBUG)
-            fprintf(stderr, "Incoming connection accepted...\n");
+        if (DEBUG) cerr << "Connection: INCOMING CONNECTION ACCEPTED" << endl;
 
         pthread_t thread;
 
@@ -117,8 +161,7 @@ void Connection::start_server()
         if (ret)
             handle_error_en(ret, "Could not create a new thread");
 
-        if (DEBUG)
-            fprintf(stderr, "New thread created to handle the request!\n");
+        if (DEBUG) cerr << "Connection: NEW THREAD SPAWNED TO HANDLE THE REQUEST" << endl;
 
         ret = pthread_detach(thread); // I won't phtread_join() on this thread
         if (ret)
@@ -132,4 +175,5 @@ void Connection::start_server()
 
 void Connection::stop_server(){
     running = false;
+    if (DEBUG) cerr << "Connection: SERVER STOPPED" << endl;
 }

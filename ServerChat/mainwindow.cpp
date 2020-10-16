@@ -1,7 +1,9 @@
+#include <iostream>
 #include <pthread.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+using namespace std;
+
 #include "common.h"
 #include "connection.h"
 #include "mainwindow.h"
@@ -10,27 +12,36 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
-    //set window's main properties
-    this->setWindowTitle("Server");
-    this->setGeometry(0,0,800,600);
-    QWidget *centralWidget = new QWidget(this);
-    this->setCentralWidget(centralWidget);
-    QWidget *verticalLayoutWidget = new QWidget(centralWidget);
-    verticalLayoutWidget->setGeometry(220,120,360,290);
-    QVBoxLayout *verticalLayout = new QVBoxLayout();
-    verticalLayoutWidget->setLayout(verticalLayout);
+  if (DEBUG) cerr << "MainWindow: STARTING..." << endl;
 
-    //Start / Stop Button
-    startStopButton = new QPushButton("&Start", verticalLayoutWidget);
-    verticalLayout->addWidget(startStopButton);
-    connect(startStopButton, SIGNAL(clicked()), this, SLOT(on_startStopButton_clicked()));
+  //set window's main properties
+  this->setWindowTitle("Server");
+  QDesktopWidget* desktop = new QDesktopWidget();
+  this->setGeometry(desktop->availableGeometry(this).width() * 0.25,
+                    desktop->availableGeometry(this).height() * 0.25,
+                    desktop->availableGeometry(this).width() * 0.5,
+                    desktop->availableGeometry(this).height() * 0.5);
+  QWidget *centralWidget = new QWidget(this);
+  this->setCentralWidget(centralWidget);
+  QWidget *verticalLayoutWidget = new QWidget(centralWidget);
+  verticalLayoutWidget->setGeometry(this->width() * 0.25,
+                                    this->height() * 0.25,
+                                    this->width() * 0.5,
+                                    this->height() * 0.5);
+  QVBoxLayout *verticalLayout = new QVBoxLayout();
+  verticalLayoutWidget->setLayout(verticalLayout);
 
-    //Quit Button
-    quitButton = new QPushButton("&Quit", verticalLayoutWidget);
-    verticalLayout->addWidget(quitButton);
-    connect(quitButton, SIGNAL(clicked()), this, SLOT(on_quitButton_clicked()));
+  //Start / Stop Button
+  startStopButton = new QPushButton("&Start", verticalLayoutWidget);
+  verticalLayout->addWidget(startStopButton);
+  connect(startStopButton, SIGNAL(clicked()), this, SLOT(on_startStopButton_clicked()));
 
-    started = false;
+  //Quit Button
+  quitButton = new QPushButton("&Quit", verticalLayoutWidget);
+  verticalLayout->addWidget(quitButton);
+  connect(quitButton, SIGNAL(clicked()), this, SLOT(on_quitButton_clicked()));
+
+  started = false;
 }
 
 //thread that open the socket for future connections
@@ -65,5 +76,6 @@ void MainWindow::on_startStopButton_clicked()
 //event handler for "Quit" button
 void MainWindow::on_quitButton_clicked()
 {
-    exit(EXIT_SUCCESS);
+  if (DEBUG) cerr << "MainWindow: EXITING..." << endl;
+  exit(EXIT_SUCCESS);
 }
